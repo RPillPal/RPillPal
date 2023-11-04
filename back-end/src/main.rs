@@ -9,6 +9,7 @@ extern crate serde;
 
 use std::env;
 
+use actix_cors::Cors;
 use anyhow::{anyhow, Context, Result};
 
 use actix_web::{middleware, web as aweb, App, HttpServer};
@@ -51,6 +52,13 @@ async fn main() -> Result<()> {
     let web_server = HttpServer::new(move || {
         App::new()
             .app_data(db_data.clone())
+            .wrap(
+                Cors::default()
+                    .allow_any_origin() // Allows requests from any origin
+                    .allow_any_method() // Allows any method (GET, POST, etc.)
+                    .allow_any_header() // Allows any header
+                    .supports_credentials(), // Supports credentials (cookies, authorization headers, etc.)
+            )
             // Logger middleware
             .wrap(middleware::Logger::default())
             .route("/fetch", aweb::post().to(web::services::fetch::fetch))
