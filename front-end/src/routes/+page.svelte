@@ -57,7 +57,7 @@
   }
 
   onMount(async () => {
-  fetch("")
+  fetch("http://127.0.0.1:5000/fetch")
   .then(response => response.json())
   .then(data => {
 		console.log(data);
@@ -78,8 +78,8 @@
     {#each $familyMembers as person}
       <div class="user-summary">
         <h3 class="summary-title">{person.name}</h3>
-        <li class="summary-info">{notifyToday(person.doseToday)}</li>
-        <li class="summary-info"><img src="./pills-solid.svg">{person.dosagesLeft} Dosages Left</li>
+        <li class="summary-info">{notifyToday(person.pin)}</li>
+        <li class="summary-info"><img src="./pills-solid.svg">{person.prescription} Dosages Left</li>
       </div>
     {/each}
   </div>
