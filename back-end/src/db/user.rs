@@ -72,7 +72,14 @@ pub struct EmbeddedUser {
 pub struct UpdateRequest {
     pub name: String,
     pub num_pills: u32,
-    pub time_dispensed: Option<u32>,
+    pub time_dispensed: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddRequest {
+    pub name: String,
+    pub num_added: u32,
 }
 
 impl From<User> for EmbeddedUser {

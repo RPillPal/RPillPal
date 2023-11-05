@@ -1,5 +1,5 @@
 use crate::{
-    db::user::{EmbeddedUser, UpdateRequest},
+    db::user::{AddRequest, EmbeddedUser, UpdateRequest},
     error::PillError,
 };
 use actix_web::{
@@ -57,6 +57,19 @@ pub async fn update(
     body: Json<UpdateRequest>,
 ) -> Result<HttpResponse, PillError> {
     db.update_user(body.0).await.map_err(|e| {
+        println!("Error fetching user: {e}");
+        e
+    })?;
+
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[post("/update_pills")]
+pub async fn update_pills(
+    db: Data<crate::db::MongoDB>,
+    body: Json<AddRequest>,
+) -> Result<HttpResponse, PillError> {
+    db.update_user_pills(body.0).await.map_err(|e| {
         println!("Error fetching user: {e}");
         e
     })?;

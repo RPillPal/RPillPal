@@ -104,19 +104,27 @@ impl MongoDB {
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
         println!("doc: {:?}", &doc);
         let filter = doc! {"name": doc.name};
-        let update = if let Some(time) = doc.time_dispensed {
-            doc! {
-                "$set": {
-                    "prescription.0.numPills": doc.num_pills,
-                    "prescription.0.lastTaken": time
-                },
-            }
-        } else {
-            doc! {
-                "$set": {
-                    "prescription.0.numPills": doc.num_pills
-                }
-            }
+        let update = doc! {
+            "$set": {
+                "prescription.0.numPills": doc.num_pills,
+                "prescription.0.lastTaken": doc.time_dispensed,
+            },
+        };
+        self.patients_collection
+            .update_one(filter, update, None)
+            .await
+    }
+
+    pub async fn update_user_pills(
+        &self,
+        doc: user::AddRequest,
+    ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+        println!("doc: {:?}", &doc);
+        let filter = doc! {"name": doc.name};
+        let update = doc! {
+            "$inc": {
+                "prescription.0.numPills": doc.num_added,
+            },
         };
         self.patients_collection
             .update_one(filter, update, None)
