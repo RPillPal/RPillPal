@@ -51,7 +51,7 @@ pub async fn pill_data(
     Ok(HttpResponse::Ok().json(EmbeddedUser::from(user)))
 }
 
-#[post("/update/{user}")]
+#[post("/update")]
 pub async fn update(
     db: Data<crate::db::MongoDB>,
     body: Json<UpdateRequest>,
