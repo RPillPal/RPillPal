@@ -123,6 +123,7 @@ pub async fn clean_up_devices(db: Data<crate::db::MongoDB>) {
             .unwrap()
             .as_secs();
         current_online_devices.retain(|d| current_time - (d.last_heartbeat as u64) < 60);
+        drop(current_online_devices);
         tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
     }
 }
