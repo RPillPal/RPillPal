@@ -273,6 +273,15 @@
   }
   onMount( () => {
     fetchData();
+
+    const intervalId = setInterval(() => {
+      fetchDeviceInfo();
+      fetchData();
+    }, 60000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   });
 
   function changeModalState(){
@@ -411,7 +420,7 @@
   <div class="modal-content">
       <div class="close" on:click={changeDeviceModalState}>&times;</div>
       <h3 class="modal-title">Devices Online</h3>
-      {#if deviceList.length > 0}
+      {#if $deviceList.length > 0}
       {#each $deviceList as device}
         <div class="form-object">Device ID: <br/> {device.deviceId}</div>
         <div class="form-object">Last Heartbeat: <br/> {formatDate(device.lastHeartbeat)}</div>
