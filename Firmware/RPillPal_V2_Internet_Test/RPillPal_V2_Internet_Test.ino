@@ -1,29 +1,3 @@
-void loop() {
-  //Modify to use user input trigger boolean flag rather than 30 second loop.
-
-  if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
-
-    HTTPClient http;  //Declare an object of class HTTPClient
-
-    http.begin("http://www.google.com");  //Specify request destination ADJUST FROM DB
-    int httpCode = http.GET();     //Send the request                   ADJUST FROM DB ENDPOINT                                        
-
-    if (httpCode > 0) { //Check the returning code
-
-      String payload = http.getString();   //Get the request response payload 
-      Serial.println(payload);                     //Print the response payload 
-
-    }
-
-    http.end();   //Close connection
-
-  }
-
-  delay(30000);    //Send a request every 30 seconds
-
-}
-
-
 #include <Wire.h>
 #include <OneButton.h>
 #include <Adafruit_GFX.h>
