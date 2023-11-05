@@ -106,6 +106,12 @@ impl From<&User> for EmbeddedUser {
             NaiveDateTime::from_timestamp_opt(val.prescription[0].expiration as i64, 0).unwrap();
         let expired = TimeZone::from_utc_datetime(&Utc, &naive_expired);
 
+        println!("now: {}", now);
+        println!("last: {}", last);
+        println!("expired: {}", expired);
+        println!("now-last: {}", now - last);
+        println!("now-last.hours: {}", (now - last).num_hours());
+
         user.can_take_pill = match user.frequency {
             Frequency::TwiceDaily => (now - last).num_hours() >= 12,
             Frequency::Daily => (now - last).num_days() >= 1,
