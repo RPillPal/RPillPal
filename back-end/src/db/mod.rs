@@ -102,15 +102,14 @@ impl MongoDB {
         &self,
         doc: user::UpdateRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+        println!("doc: {:?}", &doc);
         let filter = doc! {"name": doc.name};
         let update = if let Some(time) = doc.time_dispensed {
             doc! {
                 "$set": {
-                    "prescription.0.numPills": doc.num_pills
-                },
-                "$set": {
+                    "prescription.0.numPills": doc.num_pills,
                     "prescription.0.lastTaken": time
-                }
+                },
             }
         } else {
             doc! {
