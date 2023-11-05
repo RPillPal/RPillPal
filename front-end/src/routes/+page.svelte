@@ -21,6 +21,12 @@
     right: 30px;
     z-index: 99;
   }
+  .device-menu {
+    position: fixed;
+    bottom: 20px;
+    left: 30px;
+    z-index: 99;
+  }
   .menu-button {
     width: 75px;
     height: 75px;
@@ -32,6 +38,18 @@
     font: inherit;
     outline: inherit;
   }
+  .device-menu-button {
+    width: 75px;
+    height: 75px;
+    border-radius: 75px;
+    background: none;
+    background-color: IndianRed;
+    border: none;
+    color: inherit;
+    font: inherit;
+    outline: inherit;
+
+  }
   .summary-container {
     display: flex;
     width: 100%;
@@ -39,7 +57,7 @@
     justify-content: center;
   }
   .user-summary {
-    height: 400px;
+    height: 300px;
     width: 500px;
     margin: 20px;
     padding: 20px;
@@ -152,9 +170,10 @@
 
 <script>
   import { onMount } from "svelte";
-  import { apiData, familyMembers } from "./store.js";
+  import { apiData, familyMembers, deviceData, deviceList } from "./store.js";
   import Select from "svelte-select";
   $: modalState = "display: none"
+  $: deviceModalState = "display: none"
   
   function getPrescriptionList(person){
     return 1//person.map(prescription => prescription.name);
@@ -234,6 +253,23 @@
       console.log(error);
       return [];
       });
+  } 
+
+  async function fetchDeviceInfo(){
+    fetch("http://34.86.88.18:5000/get_devices", {
+      method: 'GET',
+      headers: {
+          'Content-Type': "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      deviceData.set(data);
+    }).catch(error => {
+      console.log(error);
+      return [];
+      });
   }
   onMount( () => {
     fetchData();
@@ -242,10 +278,23 @@
   function changeModalState(){
     console.log("changed modal state")
     if (modalState == "display: none"){
+      deviceModalState = "display: none";
       modalState = "display: block";
     } 
     else{
       modalState = "display: none";
+    }
+  }
+
+  async function changeDeviceModalState(){
+    console.log("changed modal state")
+    if (deviceModalState == "display: none"){
+      fetchDeviceInfo();
+      modalState = "display: none";
+      deviceModalState = "display: block";
+    } 
+    else{
+      deviceModalState = "display: none";
     }
   }
 
@@ -313,9 +362,16 @@
   </div>
   <div class="user-menu">
     <button id="menu-button" class="menu-button" on:click={changeModalState}>
-      <img alt="User Menu" src="./pencil-solid.svg" style="width: 50px">
+      <img alt="Inventory Menu" src="./pencil-solid.svg" style="width: 50px">
     </button>
   </div>
+
+  <div class="device-menu">
+    <button id="menu-button" class="device-menu-button" on:click={changeDeviceModalState}>
+      <img alt="Device Info Menu" src="./info-solid.svg" style="width: 20px">
+    </button>
+  </div>
+
 </div>
 
 <div class="modal" style={modalState}>
@@ -348,5 +404,20 @@
           <input class="submit-user-field" type="submit" value="Submit">
         </div>
       </form>
+  </div>
+</div>
+
+<div class="modal" style={deviceModalState}>
+  <div class="modal-content">
+      <div class="close" on:click={changeDeviceModalState}>&times;</div>
+      <h3 class="modal-title">Devices Online</h3>
+      {#if deviceList.length > 0}
+      {#each $deviceList as device}
+        <div class="form-object">Device ID: <br/> {device.deviceId}</div>
+        <div class="form-object">Last Heartbeat: <br/> {formatDate(device.lastHeartbeat)}</div>
+      {/each}
+      {:else}
+        <div class="form-object">Loading Data... <br/> This may take up to one minute.</div>
+      {/if}
   </div>
 </div>
