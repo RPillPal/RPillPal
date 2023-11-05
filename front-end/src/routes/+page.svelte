@@ -153,8 +153,12 @@
 <script>
   import { onMount } from "svelte";
   import { apiData, familyMembers } from "./store.js";
+  import Select from "svelte-select";
   $: modalState = "display: none"
-  let selectedPerson;
+  
+  function getPrescriptionList(person){
+    return 1//person.map(prescription => prescription.name);
+  }
   
   function findDoseToday(person){
     const lastTaken = new Date(person.prescription[0].lastTaken * 1000);
@@ -217,7 +221,7 @@
   }
 
   onMount(async () => {
-  fetch("http://rpillpal.us:5000/fetch", {
+  fetch("http://34.86.88.18:5000/fetch", {
     method: 'GET',
     headers: {
         'Content-Type': "application/json"
@@ -243,19 +247,38 @@
     }
   }
 
-  function updateInventory()
-
+  function updateInventory(){
+    let person = document.getElementById("name").value;
+    let numPills = document.getElementById("pillsAdded").value;
+    try {
+      if(doPost(person, numPills).ok){
+        location.reload();
+      }
+      else {
+        throw new Error("HTTP Error!");
+      }
+    }
+    catch(error) {
+      console.error("Fetch error", error);
+    }
+  }
   async function doPost (person, numPills) {
-		const res = await fetch('http://rpillpal.us/update', {
-			method: 'POST',
-			body: JSON.stringify({
-			  "name": person.name,
-				"numPills": person.prescription[0].numPills + numPills
+    console.log(person, numPills);
+    const request = JSON.stringify({
+			  "name": person,
+				"numAdded": parseInt(numPills)
 			})
-		})
-		
-		const json = await res.json()
-		result = JSON.stringify(json)
+    console.log(request);
+
+		const res = await fetch('http://34.86.88.18:5000/update_pills', {
+			method: 'POST',
+      headers: {
+        'Content-Type': "application/json"
+      },
+			body: request
+    });
+    await res;
+    return res;
 	}
   </script>
 
@@ -292,26 +315,26 @@
   <div class="modal-content">
       <div class="close" on:click={changeModalState}>&times;</div>
       <h3 class="modal-title">Add to Inventory</h3>
-      <form class="modal-form" > <!-- on:submit={updateInventory} -->
+      <form class="modal-form"  on:submit={updateInventory}>
         <div class="form-object">
           <label for="name">Name:</label>
           <select class="user-field" id="name" name="name">
             {#each $familyMembers as person}
-              <option bind:value={selectedPerson}>{person.name}</option>
+              <option>{person.name}</option>
             {/each}
           </select>
         </div>
         <div class="form-object">
           <label for="prescriptionName">Medicine Name:</label>
-          <select class="user-field" id="prescriptionName" name="prescriptionName">
+          <select class="user-field" id="prescriptionName">
             {#each $familyMembers as person}
-              <option bind:value={person.prescription[0].name}>{person.prescription[0].name}</option>
+              <option>{person.prescription[0].name}</option>
             {/each}
           </select>
         </div>
         <div class="form-object">
           <label for="pillsAdded">Pills Added:</label>
-          <input bind:value={} class="user-field" type="number" id="pillsAdded" name="pillsAdded" min="1" max="30">
+          <input required class="user-field" type="number" id="pillsAdded" name="pillsAdded" min="1" max="30">
         </div>
         <div class="form-object">
           <input class="submit-user-field" type="submit" value="Submit">
