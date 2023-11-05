@@ -264,7 +264,7 @@
   }
   async function fetchData(){
     //get request function for user data
-    fetch("http://34.86.88.18:5000/fetch", {
+    fetch("http://34.150.129.228:5000/fetch", {
       method: 'GET',
       headers: {
           'Content-Type': "application/json"
@@ -282,7 +282,7 @@
 
   async function fetchDeviceInfo(){
     //get request function for device heartbeat info
-    fetch("http://34.86.88.18:5000/get_devices", {
+    fetch("http://34.150.129.228:5000/get_devices", {
       method: 'GET',
       headers: {
           'Content-Type': "application/json"
@@ -367,7 +367,7 @@
 			})
     console.log(request);
 
-		const res = await fetch('http://34.86.88.18:5000/update_pills', {
+		const res = await fetch('http://34.150.129.228:5000/update_pills', {
 			method: 'POST',
       headers: {
         'Content-Type': "application/json"
