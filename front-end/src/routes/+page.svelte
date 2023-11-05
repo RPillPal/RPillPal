@@ -77,12 +77,7 @@
     margin-bottom: 30px;
     font-size: 18px;
     list-style-type: none;
-  }
-  .summary-info img {
-    width: 50px;
-    margin-right: 10px;
-  }
-
+  } 
   .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -113,22 +108,27 @@
     margin-bottom: 60px;
     text-align: center;
   }
-    
-  .close {
+  .close-button:hover,
+  .close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  } 
+  .close-button {
     text-align: right;
     color: #aaa;
     margin-right: 15px;
     font-size: 42px;
     font-weight: bold;
-  }
 
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  } 
-  
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    outline: inherit;
+    float: right;
+    font-size: 42px;
+  }
   .modal-form {
     display: grid;
     grid-template-columns: 1fr;
@@ -399,7 +399,7 @@
 <div class="modal" style={modalState}>
 
   <div class="modal-content">
-      <div class="close" on:click={changeModalState}>&times;</div>
+      <button class="close-button" on:click={changeModalState}>&times;</button>
       <h3 class="modal-title">Add to Inventory</h3>
       <form class="modal-form"  on:submit={updateInventory}>
         <div class="form-object">
@@ -431,7 +431,7 @@
 
 <div class="modal" style={deviceModalState}>
   <div class="modal-content">
-      <div class="close" on:click={changeDeviceModalState}>&times;</div>
+      <button class="close-button" on:click={changeDeviceModalState}>&times;</button>
       <h3 class="modal-title">Devices Online</h3>
       {#if $deviceList.length > 0}
       {#each $deviceList as device}
