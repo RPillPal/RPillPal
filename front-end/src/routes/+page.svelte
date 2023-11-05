@@ -15,6 +15,23 @@
     font-size: 64px;
     color: black;
   }
+  .user-menu {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 99;
+  }
+  .menu-button {
+    width: 75px;
+    height: 75px;
+    border-radius: 75px;
+    background: none;
+    background-color: orange;
+    border: none;
+    color: inherit;
+    font: inherit;
+    outline: inherit;
+  }
   .summary-container {
     display: flex;
     width: 100%;
@@ -46,18 +63,60 @@
     width: 50px;
     margin-right: 10px;
   }
+  /* The Modal (background) */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  } 
 </style>
 
 <script>
   import { onMount } from "svelte";
   import { apiData, familyMembers } from "./store.js";
-  //$: dosesOnHand = 10;
+  $: modalState = "display: none"
   function notifyToday(doseToday){
     return doseToday ? "Don't forget to take your medicine today!" : "You have already taken your medicine today!";
   }
 
   onMount(async () => {
-  fetch("http://127.0.0.1:5000/fetch")
+  fetch("http://127.0.0.1:5000/fetch", {
+    method: 'GET',
+    headers: {
+        'Content-Type': "application/json"
+      }
+  })
   .then(response => response.json())
   .then(data => {
 		console.log(data);
@@ -65,12 +124,27 @@
   }).catch(error => {
     console.log(error);
     return [];
+    });
   });
-});
-</script>
+  
+  function changeModalState(){
+    console.log("changed modal state")
+    if (modalState == "display: none"){
+      modalState = "display: block";
+    } 
+    else{
+      modalState = "display: none";
+    }
+  }
+  </script>
 
 <div class="parent-container">
-  <h1 class="title">RPillPal</h1>
+  <h1 class="title">
+    <img style="width: 100px; margin-right: 50px; transform: scale(-1, 1);" alt="Pill Icon" src="./pills-solid.svg">
+    RPillPal
+    <img style="width: 100px; margin-left: 50px;" alt="Pill Icon" src="./pills-solid.svg">
+  </h1>
+  <p class="title" style="font-size: 24px"> Manage your family's prescriptions safely.</p>
 
   <!-- <p>You have {dosesOnHand} doses remaining</p> -->
 
@@ -79,8 +153,28 @@
       <div class="user-summary">
         <h3 class="summary-title">{person.name}</h3>
         <li class="summary-info">{notifyToday(person.pin)}</li>
-        <li class="summary-info"><img src="./pills-solid.svg">{person.prescription} Dosages Left</li>
+        <li class="summary-info"><img alt="Pill Icon" src="./pills-solid.svg">{person.prescription} Dosages Left</li>
       </div>
     {/each}
   </div>
+  <div class="user-menu">
+    <button id="menu-button" class="menu-button" on:click={changeModalState}>
+      <img alt="User Menu" src="./pencil-solid.svg" style="width: 50px">
+    </button>
+  </div>
+</div>
+
+<div class="modal" style={modalState}>
+
+  <div class="modal-content">
+    <span class="close" on:click{changeModalState}>&times;</span>
+      <form>
+        <label for="name">Name</label>
+        <select id="name" name="name">
+        {#each $familyMembers as person}
+          <option value={person.name}>{person.name}</option>
+        {/each}
+      </form>
+  </div>
+
 </div>
