@@ -3,8 +3,8 @@ import { writable, derived } from 'svelte/store';
 export const apiData = writable([]);
 
 export const familyMembers = derived(apiData, ($apiData) => {
-  if ($apiData.users) {
-    return $apiData.users;
+  if ($apiData) {
+    return $apiData;
   }
   return [];
 });

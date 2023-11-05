@@ -63,7 +63,7 @@
     width: 50px;
     margin-right: 10px;
   }
-  /* The Modal (background) */
+
   .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -77,16 +77,15 @@
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
   }
 
-  /* Modal Content/Box */
   .modal-content {
+    font-size: 24px;
     background-color: #fefefe;
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 60%; /* Could be more or less, depending on screen size */
   }
 
-  /* The Close Button */
   .close {
     color: #aaa;
     float: right;
@@ -100,6 +99,18 @@
     text-decoration: none;
     cursor: pointer;
   } 
+  
+  .modal-form {
+    width: 90%;
+    margin: 0 auto;
+  }
+    
+  .user-field {
+    margin-left: 30px;
+    width: 70%;
+    height: 50px;
+    font-size: 24px;
+  }
 </style>
 
 <script>
@@ -168,9 +179,9 @@
 
   <div class="modal-content">
     <span class="close" on:click{changeModalState}>&times;</span>
-      <form>
-        <label for="name">Name</label>
-        <select id="name" name="name">
+      <form class="modal-form">
+        <label for="name">Name:</label>
+        <select class="user-field" id="name" name="name">
         {#each $familyMembers as person}
           <option value={person.name}>{person.name}</option>
         {/each}
