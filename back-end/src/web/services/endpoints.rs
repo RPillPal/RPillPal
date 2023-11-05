@@ -1,5 +1,8 @@
 use crate::{
-    db::user::{AddRequest, EmbeddedUser, UpdateRequest},
+    db::{
+        device::Device,
+        user::{AddRequest, EmbeddedUser, UpdateRequest},
+    },
     error::PillError,
 };
 use actix_web::{
@@ -77,16 +80,26 @@ pub async fn update_pills(
     Ok(HttpResponse::Ok().finish())
 }
 
-// #[post("/get_devices")]
-// pub fn post_devices(
-//     db: Data<crate::db::MongoDB>,
-//     body: Json<FetchRequest>,
-// ) -> Result<HttpResponse, PillError> {
-//     let name = body.name.clone();
-//     let docs = db.fetch_user_in_db(name.as_deref()).await.map_err(|e| {
-//         println!("Error fetching user: {e}");
-//         e
-//     })?;
-//
-//     Ok(HttpResponse::Ok().json(docs))
-// }
+// Check if the device by its device_id is inside the db.current_online_devices, else
+// add it to the db.current_online_devices
+#[post("/get_devices")]
+pub async fn post_devices(
+    db: Data<crate::db::MongoDB>,
+    body: Json<Device>,
+) -> Result<HttpResponse, PillError> {
+    {
+        let mut current_online_devices = db.current_online_devices.lock().unwrap();
+        if !current_online_devices.contains(&body.0) {
+            current_online_devices.push(body.0);
+        }
+    }
+
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[get("/get_devices")]
+pub async fn get_devices(db: Data<crate::db::MongoDB>) -> Result<HttpResponse, PillError> {
+    let current_online_devices = db.current_online_devices.lock().unwrap();
+
+    Ok(HttpResponse::Ok().json(current_online_devices.clone()))
+}

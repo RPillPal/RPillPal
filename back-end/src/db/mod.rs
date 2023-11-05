@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 use futures::TryStreamExt;
 use mongodb::options::ClientOptions;
 
@@ -14,7 +16,7 @@ pub struct MongoDB {
 
     pub patients_collection: mongodb::Collection<user::User>,
 
-    pub current_online_devices: Vec<device::Device>,
+    pub current_online_devices: Arc<Mutex<Vec<device::Device>>>,
 }
 
 impl MongoDB {
@@ -73,7 +75,7 @@ impl MongoDB {
             patients_db: client.database("patients"),
             patients_collection: client.database("patients").collection("patients"),
 
-            current_online_devices: vec![],
+            current_online_devices: Arc::new(Mutex::new(Vec::new())),
         })
     }
 

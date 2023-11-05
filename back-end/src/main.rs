@@ -62,6 +62,8 @@ async fn main() -> Result<()> {
             .service(web::services::endpoints::pill_data)
             .service(web::services::endpoints::update)
             .service(web::services::endpoints::update_pills)
+            .service(web::services::endpoints::post_devices)
+            .service(web::services::endpoints::get_devices)
             // .service(web::services::fetch::fetch_user)
             .default_service(aweb::to(web::services::not_found::not_found))
     })
