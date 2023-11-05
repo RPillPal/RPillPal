@@ -20,6 +20,8 @@ mod web;
 
 use db::MongoDB;
 
+use crate::web::services::endpoints::clean_up_devices;
+
 /// Get an environment variable, returning an Err with a
 /// nice error message mentioning the missing variable in case the value is not found.
 pub fn required_env_var(key: &str) -> Result<String> {
@@ -44,6 +46,8 @@ async fn main() -> Result<()> {
     };
 
     let db_data = aweb::Data::new(MongoDB::new(&database_url).await?);
+
+    let db_clone = db_data.clone();
 
     let web_server = HttpServer::new(move || {
         App::new()
@@ -71,6 +75,9 @@ async fn main() -> Result<()> {
     .unwrap_or_else(|_| panic!("Could not bind to http://{}", "0.0.0.0:5000"))
     // Start the server running.
     .run();
+
+    // spawn a task to clean up devices
+    tokio::spawn(clean_up_devices(db_clone));
 
     println!("Server running at http://0.0.0.0:5000");
 

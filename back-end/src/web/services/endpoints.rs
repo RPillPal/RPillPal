@@ -88,8 +88,13 @@ pub async fn post_devices(
     body: Json<Device>,
 ) -> Result<HttpResponse, PillError> {
     {
-        let mut current_online_devices = db.current_online_devices.lock().unwrap();
-        if !current_online_devices.contains(&body.0) {
+        let mut current_online_devices = db.current_online_devices.lock().await;
+        if let Some(device) = current_online_devices
+            .iter_mut()
+            .find(|d| d.device_id == body.device_id)
+        {
+            device.last_heartbeat = body.last_heartbeat;
+        } else {
             current_online_devices.push(body.0);
         }
     }
@@ -99,7 +104,21 @@ pub async fn post_devices(
 
 #[get("/get_devices")]
 pub async fn get_devices(db: Data<crate::db::MongoDB>) -> Result<HttpResponse, PillError> {
-    let current_online_devices = db.current_online_devices.lock().unwrap();
+    let current_online_devices = db.current_online_devices.lock().await;
 
     Ok(HttpResponse::Ok().json(current_online_devices.clone()))
+}
+
+// Cleanup function that loops every 30 seconds to find dead devices
+pub async fn clean_up_devices(db: Data<crate::db::MongoDB>) {
+    loop {
+        let mut current_online_devices = db.current_online_devices.lock().await;
+        // current unix timestamp
+        let current_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        current_online_devices.retain(|d| current_time - (d.last_heartbeat as u64) < 60);
+        tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+    }
 }

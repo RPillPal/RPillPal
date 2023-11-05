@@ -1,7 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use futures::TryStreamExt;
 use mongodb::options::ClientOptions;
+use tokio::sync::Mutex;
 
 use crate::parse_required_env_var;
 
