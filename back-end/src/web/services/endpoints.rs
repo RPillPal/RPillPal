@@ -46,10 +46,14 @@ pub async fn pill_data(
     info: Path<String>, // Extract path parameter
 ) -> Result<HttpResponse, PillError> {
     let name = info.into_inner();
-    let user = &db.fetch_user_in_db(Some(&name)).await.map_err(|e| {
+    let users = db.fetch_user_in_db(Some(&name)).await.map_err(|e| {
         println!("Error fetching user: {e}");
         e
-    })?[0];
+    })?;
+
+    let user = users
+        .get(0)
+        .ok_or(PillError::MongoError("No user found".into()))?;
 
     Ok(HttpResponse::Ok().json(EmbeddedUser::from(user)))
 }
