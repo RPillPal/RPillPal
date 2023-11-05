@@ -219,24 +219,26 @@
       return response;
     }
   }
-
-  onMount(async () => {
-  fetch("http://34.86.88.18:5000/fetch", {
-    method: 'GET',
-    headers: {
-        'Content-Type': "application/json"
-      }
-  })
-  .then(response => response.json())
-  .then(data => {
-		console.log(data);
-    apiData.set(data);
-  }).catch(error => {
-    console.log(error);
-    return [];
-    });
+  async function fetchData(){
+    fetch("http://34.86.88.18:5000/fetch", {
+      method: 'GET',
+      headers: {
+          'Content-Type': "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      apiData.set(data);
+    }).catch(error => {
+      console.log(error);
+      return [];
+      });
+  }
+  onMount( () => {
+    fetchData();
   });
-  
+
   function changeModalState(){
     console.log("changed modal state")
     if (modalState == "display: none"){
@@ -247,15 +249,17 @@
     }
   }
 
-  function updateInventory(){
+  async function updateInventory(){
     let person = document.getElementById("name").value;
     let numPills = document.getElementById("pillsAdded").value;
     try {
-      if(doPost(person, numPills).ok){
-        location.reload();
+      const response = await doPost(person, numPills);
+      if(response.ok){
+        fetchData();
+        changeModalState();
       }
       else {
-        throw new Error("HTTP Error!");
+        throw new Error(`HTTP Error! Status: $(response.status)`);
       }
     }
     catch(error) {
@@ -295,11 +299,15 @@
   <div class="summary-container">
     {#each $familyMembers as person}
       <div class="user-summary">
-        <h3 class="summary-title">{person.name}</h3>
-        <li class="summary-info">{notifyToday(findDoseToday(person))}</li>
-        <li class="summary-info">You have {person.prescription[0].numPills} Dosages Left</li>
-        <li class="summary-info">Last dosage taken: <br/> {formatDate(person.prescription[0].lastTaken)}</li>
-        <li class="summary-info">{checkExpiration(person.prescription[0].expiration * 1000)}</li>
+        {#if person == null}
+          <h3 class="summary-title">loading...</h3>
+        {:else}
+          <h3 class="summary-title">{person.name}</h3>
+          <li class="summary-info">{notifyToday(findDoseToday(person))}</li>
+          <li class="summary-info">You have {person.prescription[0].numPills} Dosages Left</li>
+          <li class="summary-info">Last dosage taken: <br/> {formatDate(person.prescription[0].lastTaken)}</li>
+          <li class="summary-info">{checkExpiration(person.prescription[0].expiration * 1000)}</li>
+        {/if}
       </div>
     {/each}
   </div>
@@ -342,6 +350,3 @@
       </form>
   </div>
 </div>
-<!-- <div class="close" on:click={changeModalState}>&times;</div> -->
-
-
