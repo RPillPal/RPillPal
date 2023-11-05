@@ -68,7 +68,7 @@ impl MongoDB {
             .run_command(doc! {"ping": 1}, None)
             .await?;
 
-        println!("Connected to MongoDB!");
+        tracing::info!("Connected to MongoDB");
 
         Ok(Self {
             client: client.clone(),
@@ -110,7 +110,6 @@ impl MongoDB {
         &self,
         doc: user::UpdateRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-        println!("doc: {:?}", &doc);
         let filter = doc! {"name": doc.name};
         let update = doc! {
             "$set": {
@@ -127,7 +126,6 @@ impl MongoDB {
         &self,
         doc: user::AddRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-        println!("doc: {:?}", &doc);
         let filter = doc! {"name": doc.name};
         let update = doc! {
             "$inc": {

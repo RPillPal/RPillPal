@@ -19,7 +19,7 @@ pub struct FetchRequest {
 #[get("/fetch")]
 pub async fn fetch(data: Data<crate::db::MongoDB>) -> Result<HttpResponse, PillError> {
     let user = data.fetch_user_in_db(None).await.map_err(|e| {
-        println!("Error fetching user: {e}");
+        tracing::error!("Error fetching user: {e}");
         e
     })?;
 
@@ -33,7 +33,7 @@ pub async fn fetch_user(
 ) -> Result<HttpResponse, PillError> {
     let name = info.into_inner();
     let docs = db.fetch_user_in_db(Some(&name)).await.map_err(|e| {
-        println!("Error fetching user: {e}");
+        tracing::error!("Error fetching user: {e}");
         e
     })?;
 
@@ -47,7 +47,7 @@ pub async fn pill_data(
 ) -> Result<HttpResponse, PillError> {
     let name = info.into_inner();
     let users = db.fetch_user_in_db(Some(&name)).await.map_err(|e| {
-        println!("Error fetching user: {e}");
+        tracing::error!("Error fetching user: {e}");
         e
     })?;
 
@@ -59,12 +59,15 @@ pub async fn pill_data(
 }
 
 #[post("/update")]
+#[tracing::instrument(
+    name = "update", skip(db, body), fields(name = %body.name, num_pills = %body.num_pills, time_dispensed = %body.time_dispensed)
+)]
 pub async fn update(
     db: Data<crate::db::MongoDB>,
     body: Json<UpdateRequest>,
 ) -> Result<HttpResponse, PillError> {
     db.update_user(body.0).await.map_err(|e| {
-        println!("Error fetching user: {e}");
+        tracing::error!("Error fetching user: {e}");
         e
     })?;
 
@@ -72,12 +75,15 @@ pub async fn update(
 }
 
 #[post("/update_pills")]
+#[tracing::instrument(
+    name = "update_pills", skip(db, body), fields(name = %body.name, num_added = %body.num_added)
+)]
 pub async fn update_pills(
     db: Data<crate::db::MongoDB>,
     body: Json<AddRequest>,
 ) -> Result<HttpResponse, PillError> {
     db.update_user_pills(body.0).await.map_err(|e| {
-        println!("Error fetching user: {e}");
+        tracing::error!("Error fetching user: {e}");
         e
     })?;
 
@@ -87,6 +93,9 @@ pub async fn update_pills(
 // Check if the device by its device_id is inside the db.current_online_devices, else
 // add it to the db.current_online_devices
 #[post("/get_devices")]
+#[tracing::instrument(
+    name = "post_devices", skip(db, body), fields(device_id = %body.device_id, last_heartbeat = %body.last_heartbeat)
+)]
 pub async fn post_devices(
     db: Data<crate::db::MongoDB>,
     body: Json<Device>,
