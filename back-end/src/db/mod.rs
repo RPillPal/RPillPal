@@ -106,16 +106,16 @@ impl MongoDB {
         let update = if let Some(time) = doc.time_dispensed {
             doc! {
                 "$set": {
-                    "prescription.0.num_pills": doc.num_pills
+                    "prescription.0.numPills": doc.num_pills
                 },
                 "$set": {
-                    "prescription.0.last_taken": time
+                    "prescription.0.lastTaken": time
                 }
             }
         } else {
             doc! {
                 "$set": {
-                    "prescription.0.num_pills": doc.num_pills
+                    "prescription.0.numPills": doc.num_pills
                 }
             }
         };
