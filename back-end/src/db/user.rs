@@ -24,8 +24,9 @@ pub struct Prescription {
     pub num_pills: u32,
     pub dosage: String,
     pub frequency: Frequency,
-    pub expiration: String,
-    pub end_date: String,
+    pub end_date: u64,
+    pub expiration: u64,
+    pub last_taken: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,4 +45,41 @@ pub struct User {
     pub pin: u32,
     pub contact_info: Vec<ContactInfo>,
     pub doctor: Doctor,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddedUser {
+    pub name: String,
+    pub pin: u32,
+    pub prescription_name: String,
+    pub num_pills: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateRequest {
+    pub name: String,
+    pub num_pills: u32,
+    pub time_dispensed: String,
+}
+
+impl From<User> for EmbeddedUser {
+    fn from(val: User) -> Self {
+        EmbeddedUser {
+            name: val.name,
+            pin: val.pin,
+            prescription_name: val.prescription[0].name.clone(),
+            num_pills: val.prescription[0].num_pills,
+        }
+    }
+}
+
+impl From<&User> for EmbeddedUser {
+    fn from(val: &User) -> Self {
+        EmbeddedUser {
+            name: val.name.clone(),
+            pin: val.pin,
+            prescription_name: val.prescription[0].name.clone(),
+            num_pills: val.prescription[0].num_pills,
+        }
+    }
 }

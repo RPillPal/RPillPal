@@ -1,4 +1,4 @@
-use mongodb::options::{ClientOptions, Credential, ServerAddress};
+use mongodb::options::ClientOptions;
 
 use crate::parse_required_env_var;
 
@@ -14,7 +14,7 @@ pub struct MongoDB {
 }
 
 impl MongoDB {
-    pub async fn new(host: &str, port: u16) -> anyhow::Result<Self> {
+    pub async fn new(host: &str) -> anyhow::Result<Self> {
         // read .config into Config struct
 
         let username: String = match parse_required_env_var("DB_USERNAME") {
@@ -33,8 +33,7 @@ impl MongoDB {
         // .await
         // .unwrap();
 
-        let uri = "mongodb+srv://hackathon:rpi123@cluster0.tgssxvw.mongodb.net";
-        let uri = format!("mongodb+srv://{username}:{password}@cluster0.tgssxvw.mongodb.net");
+        let uri = format!("mongodb+srv://{username}:{password}@{host}");
         let options = ClientOptions::parse(uri).await.unwrap();
         let client = mongodb::Client::with_options(options)?;
 
@@ -70,5 +69,25 @@ impl MongoDB {
             patients_db: client.database("patients"),
             patients_collection: client.database("patients").collection("patients"),
         })
+    }
+
+    pub async fn update_user(
+        &self,
+        doc: user::UpdateRequest,
+    ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+        let filter = doc! {"name": doc.name};
+        // subtract doc.num_dispensed from the users user.prescription[0].num_pills
+        // and change the user.prescription[0].last_taken to doc.time_dispensed
+        let update = doc! {
+            "$set": {
+                "prescription.0.num_pills": doc.num_pills
+            },
+            "$set": {
+                "prescription.0.last_taken": doc.time_dispensed
+            }
+        };
+        self.patients_collection
+            .update_one(filter, update, None)
+            .await
     }
 }

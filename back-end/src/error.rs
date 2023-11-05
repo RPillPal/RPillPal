@@ -109,9 +109,16 @@ pub enum PillError {
     /// An authenticated user tried to access a resource that they do not have
     /// sufficient permissions to access.
     Forbidden,
-    // #[display(fmt = "MongoDB Error: {_0}")]
-    // /// An error interacting with MongoDB.
-    // MongoError(String),
+    #[error(ignore)]
+    #[display(fmt = "MongoDB Error: {_0}")]
+    /// An error interacting with MongoDB.
+    MongoError(String),
+}
+
+impl From<mongodb::error::Error> for PillError {
+    fn from(err: mongodb::error::Error) -> Self {
+        Self::MongoError(err.to_string())
+    }
 }
 
 // This may produce a warning in some IDEs because the `Display` trait
