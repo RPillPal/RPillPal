@@ -9,14 +9,13 @@ pub enum ContactInfo {
     Address(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Frequency {
     TwiceDaily,
     Daily,
     BiWeekly,
     Weekly,
-    Custom(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,6 +58,7 @@ pub struct EmbeddedUser {
     pub num_pills: u32,
     pub last_taken: u32,
     pub dosage: String,
+    pub frequency: Frequency,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +78,7 @@ impl From<User> for EmbeddedUser {
             num_pills: val.prescription[0].num_pills,
             last_taken: val.prescription[0].last_taken,
             dosage: val.prescription[0].dosage.clone(),
+            frequency: val.prescription[0].frequency,
         }
     }
 }
@@ -91,6 +92,7 @@ impl From<&User> for EmbeddedUser {
             num_pills: val.prescription[0].num_pills,
             last_taken: val.prescription[0].last_taken,
             dosage: val.prescription[0].dosage.clone(),
+            frequency: val.prescription[0].frequency,
         }
     }
 }
