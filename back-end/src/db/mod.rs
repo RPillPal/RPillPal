@@ -108,11 +108,9 @@ impl MongoDB {
             println!("1");
             doc! {
                 "$set": {
-                    "prescription.0.numPills": doc.num_pills
-                },
-                "$set": {
+                    "prescription.0.numPills": doc.num_pills,
                     "prescription.0.lastTaken": time
-                }
+                },
             }
         } else {
             println!("2");
