@@ -69,6 +69,12 @@ async fn main() -> Result<()> {
         App::new()
             .app_data(db_data.clone())
             .wrap(TracingLogger::default())
+            .wrap(
+                actix_cors::Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header(),
+            )
             .service(web::services::endpoints::fetch)
             .service(web::services::endpoints::fetch_user)
             .service(web::services::endpoints::pill_data)

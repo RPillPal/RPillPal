@@ -43,6 +43,7 @@ tracing-bunyan-formatter = "0.3.9"
 
 tracing-honeycomb = { git = "https://github.com/elkowar/tracing-honeycomb", branch = "latest" }
 libhoney-rust = { git = "https://github.com/nlopes/libhoney-rust", rev = "f64def9dad3523866be429866fa2821d8b0e21ad" }
+actix-cors = "0.6.4"
 
 [profile.optimization]
 inherits = "release"
