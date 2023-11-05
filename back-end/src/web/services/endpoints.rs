@@ -76,3 +76,17 @@ pub async fn update_pills(
 
     Ok(HttpResponse::Ok().finish())
 }
+
+// #[post("/get_devices")]
+// pub fn post_devices(
+//     db: Data<crate::db::MongoDB>,
+//     body: Json<FetchRequest>,
+// ) -> Result<HttpResponse, PillError> {
+//     let name = body.name.clone();
+//     let docs = db.fetch_user_in_db(name.as_deref()).await.map_err(|e| {
+//         println!("Error fetching user: {e}");
+//         e
+//     })?;
+//
+//     Ok(HttpResponse::Ok().json(docs))
+// }

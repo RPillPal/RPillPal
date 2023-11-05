@@ -3,6 +3,7 @@ use mongodb::options::ClientOptions;
 
 use crate::parse_required_env_var;
 
+pub mod device;
 pub mod user;
 
 #[derive(Debug, Clone)]
@@ -12,6 +13,8 @@ pub struct MongoDB {
     pub patients_db: mongodb::Database,
 
     pub patients_collection: mongodb::Collection<user::User>,
+
+    pub current_online_devices: Vec<device::Device>,
 }
 
 impl MongoDB {
@@ -69,6 +72,8 @@ impl MongoDB {
 
             patients_db: client.database("patients"),
             patients_collection: client.database("patients").collection("patients"),
+
+            current_online_devices: vec![],
         })
     }
 
