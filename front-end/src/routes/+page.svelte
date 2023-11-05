@@ -177,6 +177,8 @@
   $: globalPerson = $apiData[0];
 
   function getPrescriptionList(name){
+    //creates an array of prescriptions names
+    //from an array of prescription objects
     let prescriptionList = [];
     if(name){
       prescriptionList = name.prescription;
@@ -186,6 +188,8 @@
     return prescriptionList;
   }
   function setGlobalPerson(person){
+    //manages information about which person object was selected by 
+    //the inventory menu
     globalPerson = person;
     console.log("global Person: ");
     console.log(globalPerson);
@@ -193,6 +197,8 @@
   }
 
   function findDoseToday(person){
+    //this function determines if a person can take their medication
+    //based on the last time the server logged that they took it
     const lastTaken = new Date(person.prescription[0].lastTaken * 1000);
     let difference = new Date()-lastTaken;
     difference = difference / 1000 / 60 / 60;
@@ -218,10 +224,13 @@
   }
 
   function notifyToday(doseToday){
+    //this function generates a string to notify the user
+    //if they should or should not take their medicine today
     return doseToday ? "Don't forget to take your medicine today!" : "You have already taken your medicine today!";
   }
   
   function formatDate(timestamp){
+    //this function formats a date to be human readable
     const date = new Date(timestamp * 1000); // This would be your date object
 
     const options = {
@@ -239,6 +248,8 @@
   }
 
   function checkExpiration(timestamp){
+    //This function compares two dates 
+    //to check if medicine has expired
     const now = new Date();
     if (timestamp < now){
       return "Your medicine is past expiration, call your doctor."
@@ -252,6 +263,7 @@
     }
   }
   async function fetchData(){
+    //get request function for user data
     fetch("http://34.86.88.18:5000/fetch", {
       method: 'GET',
       headers: {
@@ -269,6 +281,7 @@
   } 
 
   async function fetchDeviceInfo(){
+    //get request function for device heartbeat info
     fetch("http://34.86.88.18:5000/get_devices", {
       method: 'GET',
       headers: {
@@ -285,6 +298,8 @@
       });
   }
   onMount( () => {
+    //this function handles automatic
+    //updating of server side data
     fetchData();
 
     const intervalId = setInterval(() => {
@@ -298,6 +313,7 @@
   });
 
   function changeModalState(){
+    //hides or shows inventory menu
     console.log("changed modal state")
     if (modalState == "display: none"){
       deviceModalState = "display: none";
@@ -309,6 +325,7 @@
   }
 
   async function changeDeviceModalState(){
+    //hides or shows device menu
     console.log("changed modal state")
     if (deviceModalState == "display: none"){
       fetchDeviceInfo();
@@ -321,6 +338,9 @@
   }
 
   async function updateInventory(){
+    //this function is called by the form 
+    //and makes the actual post request 
+    //while also handeling any errors
     let person = document.getElementById("name").value;
     let numPills = document.getElementById("pillsAdded").value;
     try {
@@ -338,6 +358,8 @@
     }
   }
   async function doPost (person, numPills) {
+    //this function handles submitting post requests
+    //to the backend for updating pill inventory
     console.log(person, numPills);
     const request = JSON.stringify({
 			  "name": person,
@@ -364,9 +386,7 @@
     <img style="width: 100px; margin-left: 50px;" alt="Pill Icon" src="./pills-solid.svg">
   </h1>
   <p class="title" style="font-size: 24px"> Manage your family's prescriptions safely.</p>
-
-  <!-- <p>You have {dosesOnHand} doses remaining</p> -->
-
+<!-- create a container for medication profile summaries that gets populated with user data according to database -->
   <div class="summary-container">
     {#each $familyMembers as person}
       <div class="user-summary">
@@ -382,6 +402,8 @@
       </div>
     {/each}
   </div>
+
+<!-- create two fixed buttons for opening menus -->
   <div class="user-menu">
     <button id="menu-button" class="menu-button" on:click={changeModalState}>
       <img alt="Inventory Menu" src="./pencil-solid.svg" style="width: 50px">
@@ -396,8 +418,8 @@
 
 </div>
 
+<!-- Define two modals, one for interacting with the inventory, and one for monitoring device status -->
 <div class="modal" style={modalState}>
-
   <div class="modal-content">
       <button class="close-button" on:click={changeModalState}>&times;</button>
       <h3 class="modal-title">Add to Inventory</h3>
