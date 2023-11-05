@@ -4,7 +4,7 @@ use futures::TryStreamExt;
 use mongodb::options::ClientOptions;
 use tokio::sync::Mutex;
 
-use crate::parse_required_env_var;
+use crate::util::parse_required_env_var;
 
 pub mod device;
 pub mod user;
@@ -12,18 +12,13 @@ pub mod user;
 #[derive(Debug, Clone)]
 pub struct MongoDB {
     pub client: mongodb::Client,
-
     pub patients_db: mongodb::Database,
-
     pub patients_collection: mongodb::Collection<user::User>,
-
     pub current_online_devices: Arc<Mutex<Vec<device::Device>>>,
 }
 
 impl MongoDB {
     pub async fn new(host: &str) -> anyhow::Result<Self> {
-        // read .config into Config struct
-
         let username: String = match parse_required_env_var("DB_USERNAME") {
             Ok(username) => username,
             Err(e) => return Err(e),
@@ -33,42 +28,16 @@ impl MongoDB {
             Err(e) => return Err(e),
         };
 
-        // let mut options = mongodb::options::ClientOptions::parse_with_resolver_config(
-        //     "mongodb+srv://hackathon:rpi123@cluster0.tgssxvw.mongodb.net",
-        //     mongodb::options::ResolverConfig::google(),
-        // )
-        // .await
-        // .unwrap();
-
         let uri = format!("mongodb+srv://{username}:{password}@{host}");
         let options = ClientOptions::parse(uri).await.unwrap();
         let client = mongodb::Client::with_options(options)?;
 
-        // options.connect_timeout = Some(std::time::Duration::from_secs(5));
-
-        // let options = mongodb::options::ClientOptions::builder()
-        //     .hosts(vec![ServerAddress::Tcp {
-        //         host: host.to_owned(),
-        //         port: Some(port),
-        //     }])
-        //     .credential(
-        //         Credential::builder()
-        //             .username(username)
-        //             .password(password)
-        //             .build(),
-        //     )
-        //     .connect_timeout(Some(std::time::Duration::from_secs(5)))
-        //     .build();
-        //
-        // let client = mongodb::Client::with_options(options)?;
-
-        // ping the database to check if we can connect
         client
             .database("admin")
             .run_command(doc! {"ping": 1}, None)
             .await?;
 
-        tracing::info!("Connected to MongoDB");
+        tracing::info!("Connected to MongoDB!");
 
         Ok(Self {
             client: client.clone(),
@@ -110,30 +79,45 @@ impl MongoDB {
         &self,
         doc: user::UpdateRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-        let filter = doc! {"name": doc.name};
+        let filter = doc! {"name": &doc.name};
         let update = doc! {
             "$set": {
                 "prescription.0.numPills": doc.num_pills,
                 "prescription.0.lastTaken": doc.time_dispensed,
             },
         };
-        self.patients_collection
+        let res = self
+            .patients_collection
             .update_one(filter, update, None)
-            .await
+            .await?;
+        tracing::info!(
+            "{name} now has {num_pills} pills left and last took a dose at {time_dispensed}",
+            name = doc.name,
+            num_pills = doc.num_pills,
+            time_dispensed = doc.time_dispensed
+        );
+        Ok(res)
     }
 
     pub async fn update_user_pills(
         &self,
         doc: user::AddRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-        let filter = doc! {"name": doc.name};
+        let filter = doc! {"name": &doc.name};
         let update = doc! {
             "$inc": {
                 "prescription.0.numPills": doc.num_added,
             },
         };
-        self.patients_collection
+        let res = self
+            .patients_collection
             .update_one(filter, update, None)
-            .await
+            .await?;
+        tracing::info!(
+            "Added {num_added} pills to {name}",
+            name = doc.name,
+            num_added = doc.num_added
+        );
+        Ok(res)
     }
 }
