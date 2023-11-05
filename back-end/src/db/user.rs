@@ -1,5 +1,6 @@
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+use serde_repr::Serialize_repr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -9,8 +10,9 @@ pub enum ContactInfo {
     Address(String),
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize_repr, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[repr(u8)]
 pub enum Frequency {
     TwiceDaily,
     Daily,
