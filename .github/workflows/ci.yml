@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # run a rust job on every commit to see if it runs
+  rust:
+    name: Rust ${{ matrix.toolchain }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - nightly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust and Build
+        run: |
+          cd back-end
+          rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+          cargo build --release --verbose
+
+      - name: Upload to Server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+          SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          BINARY_PATH: target/release/back-end
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          echo "$SSH_PUBLIC_KEY" > ~/.ssh/id_ed25519.pub
+          chmod 600 ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519.pub
+          ssh-keyscan -H "$SERVER_ADDR" >> ~/.ssh/known_hosts
+          # first kill the old process
+          ssh $SERVER_USER@$SERVER_ADDR "killall back-end"
+          # then upload the new binary
+          scp $BINARY_PATH $SERVER_USER@$SERVER_ADDR:$REMOTE_PATH
+          # then start the new process
+          ssh $SERVER_USER@$SERVER_ADDR "nohup $REMOTE_PATH &"
