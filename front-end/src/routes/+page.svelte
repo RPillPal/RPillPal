@@ -170,15 +170,28 @@
 
 <script>
   import { onMount } from "svelte";
-  import { apiData, familyMembers, deviceData, deviceList } from "./store.js";
+  import { apiData, familyMembers, deviceData, deviceList, peopleList } from "./store.js";
   import Select from "svelte-select";
   $: modalState = "display: none"
   $: deviceModalState = "display: none"
-  
-  function getPrescriptionList(person){
-    return 1//person.map(prescription => prescription.name);
+  $: globalPerson = $apiData[0];
+
+  function getPrescriptionList(name){
+    let prescriptionList = [];
+    if(name){
+      prescriptionList = name.prescription;
+      console.log("prescriptions: ");
+      console.log(prescriptionList);
+    }
+    return prescriptionList;
   }
-  
+  function setGlobalPerson(person){
+    globalPerson = person;
+    console.log("global Person: ");
+    console.log(globalPerson);
+    return person.name;
+  }
+
   function findDoseToday(person){
     const lastTaken = new Date(person.prescription[0].lastTaken * 1000);
     let difference = new Date()-lastTaken;
@@ -277,7 +290,7 @@
     const intervalId = setInterval(() => {
       fetchDeviceInfo();
       fetchData();
-    }, 60000);
+    }, 10000);
 
     return () => {
       clearInterval(intervalId);
@@ -393,15 +406,15 @@
           <label for="name">Name:</label>
           <select class="user-field" id="name" name="name">
             {#each $familyMembers as person}
-              <option>{person.name}</option>
+              <option on:click={setGlobalPerson(person)}>{person.name}</option>
             {/each}
           </select>
         </div>
         <div class="form-object">
           <label for="prescriptionName">Medicine Name:</label>
           <select class="user-field" id="prescriptionName">
-            {#each $familyMembers as person}
-              <option>{person.prescription[0].name}</option>
+            {#each getPrescriptionList(globalPerson) as med}
+              <option>{med.name}</option>
             {/each}
           </select>
         </div>

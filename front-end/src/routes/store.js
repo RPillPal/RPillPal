@@ -10,6 +10,17 @@ export const familyMembers = derived(apiData, ($apiData) => {
   return [];
 });
 
+export const peopleList = derived(apiData, ($apiData) => {
+  if ($apiData) {
+    let peopleList = [];
+    for (const person of $apiData) {
+      peopleList.push(person.name)
+    }
+    return peopleList;
+  }
+  return [];
+});
+
 export const deviceList = derived(deviceData, ($deviceData) => {
   if ($deviceData) {
     return $deviceData;
