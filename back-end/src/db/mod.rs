@@ -1,3 +1,4 @@
+use futures::TryStreamExt;
 use mongodb::options::ClientOptions;
 
 use crate::parse_required_env_var;
@@ -71,19 +72,51 @@ impl MongoDB {
         })
     }
 
+    pub async fn fetch_user_in_db(
+        &self,
+        user: Option<&str>,
+    ) -> Result<Vec<user::User>, mongodb::error::Error> {
+        if let Some(user) = user {
+            let doc = self
+                .patients_collection
+                .find_one(
+                    mongodb::bson::doc! {
+                        "name": user
+                    },
+                    None,
+                )
+                .await?;
+            doc.map_or(Ok(vec![]), |doc| Ok(vec![doc]))
+        } else {
+            Ok(self
+                .patients_collection
+                .find(None, None)
+                .await?
+                .try_collect()
+                .await
+                .unwrap_or_else(|_| vec![]))
+        }
+    }
+
     pub async fn update_user(
         &self,
         doc: user::UpdateRequest,
     ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
         let filter = doc! {"name": doc.name};
-        // subtract doc.num_dispensed from the users user.prescription[0].num_pills
-        // and change the user.prescription[0].last_taken to doc.time_dispensed
-        let update = doc! {
-            "$set": {
-                "prescription.0.num_pills": doc.num_pills
-            },
-            "$set": {
-                "prescription.0.last_taken": doc.time_dispensed
+        let update = if let Some(time) = doc.time_dispensed {
+            doc! {
+                "$set": {
+                    "prescription.0.num_pills": doc.num_pills
+                },
+                "$set": {
+                    "prescription.0.last_taken": time
+                }
+            }
+        } else {
+            doc! {
+                "$set": {
+                    "prescription.0.num_pills": doc.num_pills
+                }
             }
         };
         self.patients_collection

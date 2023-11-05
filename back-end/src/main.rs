@@ -60,15 +60,16 @@ async fn main() -> Result<()> {
             .service(web::services::endpoints::fetch)
             .service(web::services::endpoints::fetch_user)
             .service(web::services::endpoints::pill_data)
+            .service(web::services::endpoints::update)
             // .service(web::services::fetch::fetch_user)
             .default_service(aweb::to(web::services::not_found::not_found))
     })
-    .bind("127.0.0.1:5000")
-    .unwrap_or_else(|_| panic!("Could not bind to http://{}", "127.0.0.1:5000"))
+    .bind("0.0.0.0:5000")
+    .unwrap_or_else(|_| panic!("Could not bind to http://{}", "0.0.0.0:5000"))
     // Start the server running.
     .run();
 
-    println!("Server running at http://127.0.0.1:5000");
+    println!("Server running at http://0.0.0.0:5000");
 
     // Wait on server to produce an error.
     return Ok(web_server.await?);
